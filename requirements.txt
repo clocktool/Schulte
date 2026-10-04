@@ -1,0 +1,6 @@
+pywebview==4.4.1
+psutil
+opencv-python
+numpy
+pyautogui
+mss
