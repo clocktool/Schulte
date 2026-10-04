@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>舒尔特方格自动点击器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+    <!-- 左侧：功能区 -->
+    <div class="main-col">
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-text">
+                    <h1>舒尔特方格自动点击器</h1>
+                    <p class="brand-sub">Schulte Grid Auto Clicker</p>
+                </div>
+            </div>
+            <div class="status-chip idle" id="status">
+                <span class="dot"></span>
+                <span class="text">就绪</span>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">识别区域</h2>
+                <button id="btn-select" class="btn btn-ghost">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                        <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                        <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                        <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                    </svg>
+                    重新选区
+                </button>
+            </div>
+            <div class="region-info" id="region-text">
+                <span class="region-placeholder">尚未选区，请点击"重新选区"</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-head">
+                <h2 class="card-title">参数设置</h2>
+            </div>
+            <div class="param-grid">
+                <label class="field"><span>起始等待（秒）</span><input id="start_delay" type="number" step="0.1"></label>
+                <label class="field"><span>目标总时长（秒）</span><input id="target_total_time" type="number" step="0.1"></label>
+                <label class="field"><span>最快间隔（秒）</span><input id="fast_interval" type="number" step="0.01"></label>
+                <label class="field"><span>最慢间隔（秒）</span><input id="slow_interval" type="number" step="0.01"></label>
+                <label class="field"><span>大停顿最小（秒）</span><input id="big_pause_min" type="number" step="0.1"></label>
+                <label class="field"><span>大停顿最大（秒）</span><input id="big_pause_max" type="number" step="0.1"></label>
+                <label class="field"><span>格子边缘收缩</span><input id="cell_shrink" type="number" step="0.01"></label>
+                <label class="field"><span>匹配阈值</span><input id="match_score_max" type="number" step="0.01"></label>
+            </div>
+
+            <div class="opt-group">
+                <div class="opt-row">
+                    <span class="opt-label">排序方向</span>
+                    <div class="segmented">
+                        <label class="seg"><input type="radio" name="sort" value="asc"><span>从小到大</span></label>
+                        <label class="seg"><input type="radio" name="sort" value="desc"><span>从大到小</span></label>
+                    </div>
+                </div>
+                <div class="opt-row">
+                    <span class="opt-label">鼠标模式</span>
+                    <div class="segmented">
+                        <label class="seg"><input type="radio" name="mouse" value="instant"><span>瞬移</span></label>
+                        <label class="seg"><input type="radio" name="mouse" value="smooth"><span>平滑移动</span></label>
+                        <label class="seg"><input type="radio" name="mouse" value="human"><span>人类模拟</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="param-grid compact">
+                <label class="field"><span>人类模拟抖动（像素）</span><input id="human_jitter" type="number" step="0.1"></label>
+                <label class="field"><span>点击抖动（像素）</span><input id="click_jitter" type="number" step="1"></label>
+            </div>
+
+            <div class="opt-row">
+                <span class="opt-label">模板包</span>
+                <select id="template_pack" class="select"></select>
+            </div>
+        </section>
+
+        <section class="actions">
+            <button id="btn-start" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                开始点击
+            </button>
+            <button id="btn-save" class="btn btn-secondary">保存配置</button>
+            <button id="btn-help" class="btn btn-secondary">帮助</button>
+            <button id="btn-exit" class="btn btn-secondary">退出</button>
+        </section>
+    </div>
+
+    <!-- 右侧：日志区（由宽度决定是否出现） -->
+    <div class="log-col">
+        <section class="card log-card">
+            <div class="card-head">
+                <h2 class="card-title">运行日志</h2>
+                <div class="log-tools">
+                    <span class="log-tools-label">过滤</span>
+                    <select id="filter" class="select small">
+                        <option value="">全部</option>
+                        <option value="info">信息</option>
+                        <option value="success">成功</option>
+                        <option value="warn">警告</option>
+                        <option value="error">错误</option>
+                        <option value="click">点击</option>
+                        <option value="pause">停顿</option>
+                    </select>
+                    <button id="btn-clear-log" class="btn btn-ghost small">清空</button>
+                </div>
+            </div>
+            <div id="log" class="log"></div>
+        </section>
+    </div>
+</div>
+
+<!-- 自定义通用弹窗 -->
+<div id="modal-mask" class="modal-mask hidden">
+    <div id="modal-box" class="modal-box">
+        <div class="modal-head">
+            <h3 id="modal-title">标题</h3>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-foot" id="modal-foot">
+            <button class="btn btn-secondary" id="modal-cancel">取消</button>
+            <button class="btn btn-primary" id="modal-ok">确定</button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
